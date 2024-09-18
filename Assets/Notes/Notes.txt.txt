@@ -1,0 +1,5 @@
+//Texture painting happens in paint terrain
+//2 lane hwy is 15 wide
+//left off at 3rd driving video
+//need to get values ported to prometheus code from car controller
+//motorcycle set up like car at slow speeds, transition to shifting center of mass
