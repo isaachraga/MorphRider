@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,12 +14,17 @@ namespace ArcadeBP2
         public groundCheck GroundCheck;
         public LayerMask drivableSurface;
 
-        public float MaxSpeed, accelaration, turn;
+        public float MaxSpeed, accelaration, brake, turn;
+
+        public bool drifting, driftLeft;
         public Rigidbody rb, bikeBody;
+
+
 
         
         public RaycastHit hit;
         public AnimationCurve frictionCurve;
+        public AnimationCurve driftFrictionCurve;
         public AnimationCurve turnCurve;
         public AnimationCurve leanCurve;
         public PhysicMaterial frictionMaterial;
@@ -42,7 +48,7 @@ namespace ArcadeBP2
         public float skidWidth;
 
 
-        private float radius, horizontalInput, verticalInput;
+        private float radius, horizontalInput, accelerateInput, brakeInput;
         private Vector3 origin;
 
         public PlayerInput playerInput;
@@ -61,8 +67,9 @@ namespace ArcadeBP2
             //horizontalInput = Input.GetAxis("Horizontal"); //turning input
            // verticalInput = Input.GetAxis("Vertical");     //accelaration input
             horizontalInput = playerInput.actions["Steering"].ReadValue<Vector2>().x;
-            verticalInput = playerInput.actions["Accelerate"].ReadValue<float>();
-            Debug.Log("V: "+ verticalInput);
+            accelerateInput = playerInput.actions["Accelerate"].ReadValue<float>();
+            brakeInput = playerInput.actions["Brake"].ReadValue<float>();
+            //Debug.Log("V: "+ accelerateInput);
             Visuals();
             AudioManager();
 
@@ -83,12 +90,24 @@ namespace ArcadeBP2
 
         void FixedUpdate()
         {
+           
             bikeVelocity = bikeBody.transform.InverseTransformDirection(bikeBody.velocity);
+            
+            
+            DriftCheck();
 
             if (Mathf.Abs(bikeVelocity.x) > 0)
-            {
+            {  
+                
                 //changes friction according to sideways speed of bike
-                frictionMaterial.dynamicFriction = frictionCurve.Evaluate(Mathf.Abs(bikeVelocity.x / 100));
+                if(drifting){
+                    print("drifting");
+                    frictionMaterial.dynamicFriction = driftFrictionCurve.Evaluate(Mathf.Abs(bikeVelocity.x / 100));
+                } else{
+                    frictionMaterial.dynamicFriction = frictionCurve.Evaluate(Mathf.Abs(bikeVelocity.x / 100));
+                    print("not drifting");
+                }
+                
             }
 
 
@@ -97,40 +116,51 @@ namespace ArcadeBP2
                 //turnlogic
                 float sign = Mathf.Sign(bikeVelocity.z);
                 float TurnMultiplyer = turnCurve.Evaluate(bikeVelocity.magnitude / MaxSpeed);
-                if (verticalInput > 0.1f || bikeVelocity.z > 1)
+                if (accelerateInput > 0.1f || bikeVelocity.z > 1)
+                //if ( bikeVelocity.z > 1)
                 {
                     bikeBody.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                 }
-                else if (verticalInput < -0.1f || bikeVelocity.z < -1)
+                //need to figure out if drifting is mixed with breaking is mixed with reverse
+                //else if (brakeInput > 0.1f || bikeVelocity.z < -1)
+                else if ( bikeVelocity.z < -1)
                 {
                     bikeBody.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                 }
 
                 //brakelogic
-                /*if (Input.GetAxis("Jump") > 0.1f)
+                //if (Input.GetAxis("Jump") > 0.1f)
+                if (!grounded())
                 {
                     rb.constraints = RigidbodyConstraints.FreezeRotationX;
                 }
                 else
                 {
                     rb.constraints = RigidbodyConstraints.None;
-                }*/
+                }
+
+                
 
                 //accelaration logic
 
                 if (movementMode == MovementMode.AngularVelocity)
                 {
-                    if (Mathf.Abs(verticalInput) > 0.1f)
+                    if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
-                        rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, bikeBody.transform.right * verticalInput * MaxSpeed / radius, accelaration * Time.deltaTime);
+                        rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, bikeBody.transform.right * accelerateInput * MaxSpeed / radius, accelaration * Time.deltaTime);
+                    } else if(Mathf.Abs(brakeInput) > 0.1f){
+                        rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, bikeBody.transform.right * brakeInput * MaxSpeed / radius, brake * Time.deltaTime);
                     }
                 }
                 else if (movementMode == MovementMode.Velocity)
                 {
                     //if (Mathf.Abs(verticalInput) > 0.1f && Input.GetAxis("Jump") < 0.1f)
-                    if (Mathf.Abs(verticalInput) > 0.1f)
+                    if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
-                        rb.velocity = Vector3.Lerp(rb.velocity, bikeBody.transform.forward * verticalInput * MaxSpeed, accelaration / 10 * Time.deltaTime);
+                        rb.velocity = Vector3.Lerp(rb.velocity, bikeBody.transform.forward * accelerateInput * MaxSpeed, accelaration / 10 * Time.deltaTime);
+                    } else if (Mathf.Abs(brakeInput) > 0.1f){
+                        rb.velocity = Vector3.Lerp(rb.velocity, bikeBody.transform.forward * 0, brake / 10 * Time.deltaTime);
+                        //print("braking");
                     }
                 }
 
@@ -142,6 +172,18 @@ namespace ArcadeBP2
                 bikeBody.MoveRotation(Quaternion.Slerp(bikeBody.rotation, Quaternion.FromToRotation(bikeBody.transform.up, Vector3.up) * bikeBody.transform.rotation, 0.02f));
             }
 
+        }
+
+        public void DriftCheck(){
+            //print("Bike: "+bikeVelocity.x);
+            //print("bike v: "+bikeVelocity.x);
+            //if velocity is greater than XXX, turning, breaking, not already drifting
+            if(bikeVelocity.z > 0.1f && Mathf.Abs(bikeVelocity.x) > 0.1f && brakeInput > 0.1f &&!drifting){
+                drifting = true;
+            } else if(Math.Abs(bikeVelocity.x) <= 0.5f && drifting){
+                
+                drifting = false;
+            }
         }
         public void Visuals()
         {
