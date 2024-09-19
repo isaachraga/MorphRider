@@ -49,7 +49,7 @@ namespace ArcadeBP2
         public float skidWidth;
 
 
-        private float radius, horizontalInput, accelerateInput, brakeInput;
+        private float radius, horizontalInput, accelerateInput, brakeInput, slideInput;
         private Vector3 origin;
 
         public PlayerInput playerInput;
@@ -70,6 +70,7 @@ namespace ArcadeBP2
             horizontalInput = playerInput.actions["Steering"].ReadValue<Vector2>().x;
             accelerateInput = playerInput.actions["Accelerate"].ReadValue<float>();
             brakeInput = playerInput.actions["Brake"].ReadValue<float>();
+            slideInput = playerInput.actions["Slide"].ReadValue<float>();
             //Debug.Log("V: "+ accelerateInput);
             Visuals();
             AudioManager();
@@ -94,7 +95,7 @@ namespace ArcadeBP2
            
             bikeVelocity = bikeBody.transform.InverseTransformDirection(bikeBody.velocity);
             
-            if(Input.GetKey(KeyCode.I)){
+            if(slideInput > 0.1f){
                 sliding = true;
             }else{
                 sliding = false;
