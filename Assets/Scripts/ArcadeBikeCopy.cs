@@ -14,10 +14,10 @@ namespace ArcadeBP2
         public groundCheck GroundCheck;
         public LayerMask drivableSurface;
 
-        public float MaxSpeed, accelaration, brake, turn, driftLimit, slide;
+        public float MaxSpeed, accelaration, brake, turn, driftLimit, slide, slideTranSpeed;
 
-        public bool drifting, sliding;
-        public Vector3 slidePos, slideRot;
+        public bool drifting, sliding, morphFlag;
+        public Vector3 slidePos, slideRot, rbTransferVelocity;
         public Rigidbody rb, bikeBody;
 
 
@@ -49,10 +49,11 @@ namespace ArcadeBP2
         public float skidWidth;
 
 
-        private float radius, horizontalInput, accelerateInput, brakeInput, slideInput;
+        private float radius, horizontalInput, accelerateInput, brakeInput, slideInput, morphInput;
         private Vector3 origin;
 
         public PlayerInput playerInput;
+        public GameObject altVehicle, temp;
 
         private void Start()
         {
@@ -71,6 +72,7 @@ namespace ArcadeBP2
             accelerateInput = playerInput.actions["Accelerate"].ReadValue<float>();
             brakeInput = playerInput.actions["Brake"].ReadValue<float>();
             slideInput = playerInput.actions["Slide"].ReadValue<float>();
+            morphInput = playerInput.actions["Morph"].ReadValue<float>();
             //Debug.Log("V: "+ accelerateInput);
             Visuals();
             AudioManager();
@@ -99,6 +101,12 @@ namespace ArcadeBP2
                 sliding = true;
             }else{
                 sliding = false;
+            }
+
+            if(morphInput > 0.1f && !morphFlag){
+                Morph();
+            } else if(morphFlag && morphInput == 0){
+                morphFlag = false;
             }
 
             DriftCheck();
@@ -200,6 +208,24 @@ namespace ArcadeBP2
                 drifting = false;
             }
         }
+
+        public void SetVelocity(Vector3 velo){
+            rb.velocity = velo;
+        }
+
+        public void Morph(){
+            rbTransferVelocity = rb.velocity;
+            Destroy(GetComponent<Rigidbody>());
+    
+            temp = Instantiate(altVehicle, new Vector3(this.transform.position.x, this.transform.position.y+.05f,this.transform.position.z), this.transform.rotation);
+            temp.GetComponent<ArcadeBikeCopy>().SetVelocity(rbTransferVelocity);
+            temp.GetComponent<ArcadeBikeCopy>().playerInput.SwitchCurrentControlScheme("Controller", Gamepad.all[0]);
+            temp.SetActive(false);
+            temp.GetComponent<ArcadeBikeCopy>().morphFlag = true;
+            //set local stuff
+            //apply velocity 
+            Destroy(this.gameObject);
+        }
         public void Visuals()
         {
             Handle.localRotation = Quaternion.Slerp(Handle.localRotation, Quaternion.Euler(Handle.localRotation.eulerAngles.x,
@@ -210,11 +236,11 @@ namespace ArcadeBP2
 
             //Body
             if(sliding){
-                BodyMesh.localRotation = Quaternion.Slerp(BodyMesh.localRotation, Quaternion.Euler(slideRot.x, slideRot.y, slideRot.z), 6f * Time.deltaTime);
-                BodyMesh.localPosition = Vector3.Lerp(BodyMesh.localPosition, new Vector3(slidePos.x, slidePos.y, slidePos.z), 6f * Time.deltaTime);
+                BodyMesh.localRotation = Quaternion.Slerp(BodyMesh.localRotation, Quaternion.Euler(slideRot.x, slideRot.y, slideRot.z), slideTranSpeed * Time.deltaTime);
+                BodyMesh.localPosition = Vector3.Lerp(BodyMesh.localPosition, new Vector3(slidePos.x, slidePos.y, slidePos.z), slideTranSpeed * Time.deltaTime);
            
             }else{
-                BodyMesh.localPosition = Vector3.Lerp(BodyMesh.localPosition, new Vector3(0, -0.379f, -0.81f), 6f * Time.deltaTime);
+                BodyMesh.localPosition = Vector3.Lerp(BodyMesh.localPosition, new Vector3(0, -0.379f, -0.81f), slideTranSpeed * Time.deltaTime);
                 if(BodyMesh.localRotation.y > 0f){
                     BodyMesh.localRotation = Quaternion.Slerp(BodyMesh.localRotation, Quaternion.Euler(0, 0, 0), 4f * Time.deltaTime);
                 }
@@ -289,6 +315,13 @@ namespace ArcadeBP2
 
             }
 
+        }
+
+        void OnDestroy(){
+            if(temp != null){
+                temp.SetActive(true);
+            }
+            
         }
 
     }

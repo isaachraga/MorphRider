@@ -62,6 +62,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Morph"",
+                    ""type"": ""Value"",
+                    ""id"": ""2d5de8d2-5d47-4a5d-8760-bde968e6d28b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -240,6 +249,39 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Slide"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b697a133-18da-4c93-9013-17599a82d4e5"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Morph"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1cf83102-70a1-4212-8430-27d13f5bac60"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller2"",
+                    ""action"": ""Morph"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9190beba-2b63-4510-b30f-6e9465910348"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Morph"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -286,6 +328,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Driving_Steering = m_Driving.FindAction("Steering", throwIfNotFound: true);
         m_Driving_Brake = m_Driving.FindAction("Brake", throwIfNotFound: true);
         m_Driving_Slide = m_Driving.FindAction("Slide", throwIfNotFound: true);
+        m_Driving_Morph = m_Driving.FindAction("Morph", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -351,6 +394,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_Steering;
     private readonly InputAction m_Driving_Brake;
     private readonly InputAction m_Driving_Slide;
+    private readonly InputAction m_Driving_Morph;
     public struct DrivingActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -359,6 +403,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Steering => m_Wrapper.m_Driving_Steering;
         public InputAction @Brake => m_Wrapper.m_Driving_Brake;
         public InputAction @Slide => m_Wrapper.m_Driving_Slide;
+        public InputAction @Morph => m_Wrapper.m_Driving_Morph;
         public InputActionMap Get() { return m_Wrapper.m_Driving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -380,6 +425,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Slide.started += instance.OnSlide;
             @Slide.performed += instance.OnSlide;
             @Slide.canceled += instance.OnSlide;
+            @Morph.started += instance.OnMorph;
+            @Morph.performed += instance.OnMorph;
+            @Morph.canceled += instance.OnMorph;
         }
 
         private void UnregisterCallbacks(IDrivingActions instance)
@@ -396,6 +444,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Slide.started -= instance.OnSlide;
             @Slide.performed -= instance.OnSlide;
             @Slide.canceled -= instance.OnSlide;
+            @Morph.started -= instance.OnMorph;
+            @Morph.performed -= instance.OnMorph;
+            @Morph.canceled -= instance.OnMorph;
         }
 
         public void RemoveCallbacks(IDrivingActions instance)
@@ -446,5 +497,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnSteering(InputAction.CallbackContext context);
         void OnBrake(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
+        void OnMorph(InputAction.CallbackContext context);
     }
 }
