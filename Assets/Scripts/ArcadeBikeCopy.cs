@@ -38,6 +38,7 @@ namespace ArcadeBP2
 
         [Range(-70, 70)]
         public float BodyTilt;
+        
         [Header("Audio settings")]
         public AudioSource engineSound;
         [Range(0, 1)]
