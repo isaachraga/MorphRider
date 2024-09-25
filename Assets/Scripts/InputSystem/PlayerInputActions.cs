@@ -71,6 +71,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Boost"",
+                    ""type"": ""Value"",
+                    ""id"": ""358c122e-4e9e-41ab-bfb2-1858608cc907"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -282,6 +291,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Morph"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fdbebf5c-cbde-4fc2-a1a9-9239fb2443f1"",
+                    ""path"": ""<Keyboard>/o"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Boost"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -329,6 +349,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Driving_Brake = m_Driving.FindAction("Brake", throwIfNotFound: true);
         m_Driving_Slide = m_Driving.FindAction("Slide", throwIfNotFound: true);
         m_Driving_Morph = m_Driving.FindAction("Morph", throwIfNotFound: true);
+        m_Driving_Boost = m_Driving.FindAction("Boost", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -395,6 +416,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_Brake;
     private readonly InputAction m_Driving_Slide;
     private readonly InputAction m_Driving_Morph;
+    private readonly InputAction m_Driving_Boost;
     public struct DrivingActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -404,6 +426,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Brake => m_Wrapper.m_Driving_Brake;
         public InputAction @Slide => m_Wrapper.m_Driving_Slide;
         public InputAction @Morph => m_Wrapper.m_Driving_Morph;
+        public InputAction @Boost => m_Wrapper.m_Driving_Boost;
         public InputActionMap Get() { return m_Wrapper.m_Driving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -428,6 +451,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Morph.started += instance.OnMorph;
             @Morph.performed += instance.OnMorph;
             @Morph.canceled += instance.OnMorph;
+            @Boost.started += instance.OnBoost;
+            @Boost.performed += instance.OnBoost;
+            @Boost.canceled += instance.OnBoost;
         }
 
         private void UnregisterCallbacks(IDrivingActions instance)
@@ -447,6 +473,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Morph.started -= instance.OnMorph;
             @Morph.performed -= instance.OnMorph;
             @Morph.canceled -= instance.OnMorph;
+            @Boost.started -= instance.OnBoost;
+            @Boost.performed -= instance.OnBoost;
+            @Boost.canceled -= instance.OnBoost;
         }
 
         public void RemoveCallbacks(IDrivingActions instance)
@@ -498,5 +527,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnBrake(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
         void OnMorph(InputAction.CallbackContext context);
+        void OnBoost(InputAction.CallbackContext context);
     }
 }

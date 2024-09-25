@@ -15,7 +15,7 @@ public class VehicleControllerRework : MonoBehaviour
     public AnimationCurve bikeFrictionCurve;
     public AnimationCurve bikeDriftFrictionCurve;
     
-    public float bMaxSpeed, bAccelaration, bBrake, bTurn, bDriftLimit, bSlide, bTilt, bSlideTranSpeed;
+    public float bMaxSpeed, bAccelaration, bBrake, bTurn, bDriftLimit, bSlide, bTilt, bSlideTranSpeed, bBoostAccelaration, bBoostMaxSpeed;
     
     
     public Vector3 slidePos, slideRot, velocity;
@@ -30,7 +30,7 @@ public class VehicleControllerRework : MonoBehaviour
     public AnimationCurve carFrictionCurve;
     public AnimationCurve carDriftFrictionCurve;
     
-    public float cMaxSpeed, cAccelaration, cBrake, cTurn, cDriftLimit, cTilt;
+    public float cMaxSpeed, cAccelaration, cBrake, cTurn, cDriftLimit, cTilt, cBoostAccelaration, cBoostMaxSpeed;
 
     //Using Vars
     public LayerMask drivableSurface;
@@ -38,8 +38,8 @@ public class VehicleControllerRework : MonoBehaviour
     public Rigidbody rb, GOrb;
     public PlayerInput playerInput;
     public PhysicMaterial frictionMaterial;
-    private float radius, horizontalInput, accelerateInput, brakeInput, slideInput, morphInput;
-    private float maxSpeed, accelaration, brake, turn, driftLimit, slide, tilt, slideTranSpeed;
+    private float radius, horizontalInput, accelerateInput, brakeInput, slideInput, morphInput, boostInput;
+    private float maxSpeed, accelaration, brake, turn, driftLimit, slide, tilt, slideTranSpeed, boostAccelaration, boostMaxSpeed;
     public bool drifting, sliding, morphFlag, bike;
     private Vector3 origin;
     
@@ -59,6 +59,7 @@ public class VehicleControllerRework : MonoBehaviour
         brakeInput = playerInput.actions["Brake"].ReadValue<float>();
         slideInput = playerInput.actions["Slide"].ReadValue<float>();
         morphInput = playerInput.actions["Morph"].ReadValue<float>();
+        boostInput = playerInput.actions["Boost"].ReadValue<float>();
 
         Visuals();
         AudioManager();
@@ -76,31 +77,34 @@ public class VehicleControllerRework : MonoBehaviour
 
     void InputControls(){
 
-        if(morphInput > 0.1f && !morphFlag){
-                Morph();
-        } else if(morphFlag && morphInput == 0){
-            morphFlag = false;
-        }
-
-        DriftCheck();
-       
+        // i know thers a lot of overlap between bike input and caar input but i have it working now and will
+        // try to extract the overlap and only list it once
         if(bike){
+            velocity = GOrb.transform.InverseTransformDirection(GOrb.velocity);
+            
             if(slideInput > 0.1f){
                 sliding = true;
             }else{
                 sliding = false;
             }
 
+            if(morphInput > 0.1f && !morphFlag){
+                Morph();
+            } else if(morphFlag && morphInput == 0){
+                morphFlag = false;
+            }
+
+            DriftCheck();
+
             if (Mathf.Abs(velocity.x) > 0)
             {  
                 
-                //changes friction according to sideways speed of bike
+                //changes friction according to sideways speed
                 if(drifting){
-                    //print("drifting");
                     frictionMaterial.dynamicFriction = bikeDriftFrictionCurve.Evaluate(Mathf.Abs(velocity.x / 100));
                 } else{
                     frictionMaterial.dynamicFriction = bikeFrictionCurve.Evaluate(Mathf.Abs(velocity.x / 100));
-                    //print("not drifting");
+                    
                 }
                 
             }
@@ -111,20 +115,21 @@ public class VehicleControllerRework : MonoBehaviour
                 //turnlogic
                 float sign = Mathf.Sign(velocity.z);
                 float TurnMultiplyer = bikeTurnCurve.Evaluate(velocity.magnitude / maxSpeed);
-                
+                if(sliding){
+                    print("sliding");
+                    rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, slide / 10 * Time.deltaTime);
+                }else{
                     if (accelerateInput > 0.1f || velocity.z > 1)
                     {
                         GOrb.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                     }
                     //need to figure out if drifting is mixed with breaking is mixed with reverse
-                    //else if (brakeInput > 0.1f || bikeVelocity.z < -1)
                     else if ( velocity.z < -1)
                     {
                         GOrb.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                     }
 
                     //brakelogic
-                    //if (Input.GetAxis("Jump") > 0.1f)
                     if (!GroundedCheck())
                     {
                         rb.constraints = RigidbodyConstraints.FreezeRotationX;
@@ -137,38 +142,54 @@ public class VehicleControllerRework : MonoBehaviour
                     
 
                     //accelaration logic
-
-                    
-                    
                     if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
-                        rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
+                        if(boostInput > 0.1f){
+                            Debug.Log("Boosting");
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * boostMaxSpeed, boostAccelaration / 10 * Time.deltaTime);
+                        }else{
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
+                        }
+                        
                     } else if (Mathf.Abs(brakeInput) > 0.1f){
                         rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
+                       
                     }
 
-                    //body tilt
+                    
+                    
+
+                    //game object rotation
                     GOrb.MoveRotation(Quaternion.Slerp(GOrb.rotation, Quaternion.FromToRotation(GOrb.transform.up, hit.normal) * GOrb.transform.rotation, 0.09f));
-                
+                    }
                 
             }
             else
             {
                 GOrb.MoveRotation(Quaternion.Slerp(GOrb.rotation, Quaternion.FromToRotation(GOrb.transform.up, Vector3.up) * GOrb.transform.rotation, 0.02f));
             }
+
         } else{
+            velocity = GOrb.transform.InverseTransformDirection(GOrb.velocity);
             
-            //Car Inputs
+           
+            if(morphInput > 0.1f && !morphFlag){
+                Morph();
+            } else if(morphFlag && morphInput == 0){
+                morphFlag = false;
+            }
+
+            DriftCheck();
+
             if (Mathf.Abs(velocity.x) > 0)
             {  
                 
-                //changes friction according to sideways speed of bike
+                //changes friction according to sideways speed
                 if(drifting){
-                    //print("drifting");
+                    
                     frictionMaterial.dynamicFriction = carDriftFrictionCurve.Evaluate(Mathf.Abs(velocity.x / 100));
                 } else{
                     frictionMaterial.dynamicFriction = carFrictionCurve.Evaluate(Mathf.Abs(velocity.x / 100));
-                    //print("not drifting");
                 }
                 
             }
@@ -179,23 +200,18 @@ public class VehicleControllerRework : MonoBehaviour
                 //turnlogic
                 float sign = Mathf.Sign(velocity.z);
                 float TurnMultiplyer = carTurnCurve.Evaluate(velocity.magnitude / maxSpeed);
-                if(sliding){
-                    print("sliding");
-                    rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, slide / 10 * Time.deltaTime);
-                }else{
+                
                     if (accelerateInput > 0.1f || velocity.z > 1)
                     {
                         GOrb.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                     }
                     //need to figure out if drifting is mixed with breaking is mixed with reverse
-                    //else if (brakeInput > 0.1f || bikeVelocity.z < -1)
                     else if ( velocity.z < -1)
                     {
                         GOrb.AddTorque(Vector3.up * horizontalInput * sign * turn * 10 * TurnMultiplyer);
                     }
 
                     //brakelogic
-                    //if (Input.GetAxis("Jump") > 0.1f)
                     if (!GroundedCheck())
                     {
                         rb.constraints = RigidbodyConstraints.FreezeRotationX;
@@ -207,26 +223,25 @@ public class VehicleControllerRework : MonoBehaviour
 
                     
 
-                    //accelaration logic
-
-                    
-                    
+                    //car accelaration logic
                     if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
-                        rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
+                        if(boostInput > 0.1f){
+                            Debug.Log("Boosting");
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * boostMaxSpeed, boostAccelaration / 10 * Time.deltaTime);
+                        }else{
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
+                        }
                     } else if (Mathf.Abs(brakeInput) > 0.1f){
                         rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
                     }
+                    
 
-                    //body tilt
+                    //game object rotation
                     GOrb.MoveRotation(Quaternion.Slerp(GOrb.rotation, Quaternion.FromToRotation(GOrb.transform.up, hit.normal) * GOrb.transform.rotation, 0.09f));
-                }
+                    }
                 
-            }
-            else
-            {
-                GOrb.MoveRotation(Quaternion.Slerp(GOrb.rotation, Quaternion.FromToRotation(GOrb.transform.up, Vector3.up) * GOrb.transform.rotation, 0.02f));
-            }
+            
         }
        
 
@@ -270,22 +285,24 @@ public class VehicleControllerRework : MonoBehaviour
             }
         } else{
             //Car Body Visual Controller
-
-            //CarWheels[0].localRotation = rb.transform.localRotation;
-            //CarWheels[1].localRotation = rb.transform.localRotation;
-
             
-            //BikeBodyMesh.localPosition = Vector3.Lerp(BikeBodyMesh.localPosition, new Vector3(0, -0.379f, -0.81f), slideTranSpeed * Time.deltaTime);
+            //need to rotate front 2 wheels on horizontal steering
 
+            CarWheels[0].localRotation = rb.transform.localRotation;
+            CarWheels[1].localRotation = rb.transform.localRotation;
+            CarWheels[2].localRotation = rb.transform.localRotation;
+            CarWheels[3].localRotation = rb.transform.localRotation;
 
             if (velocity.z > 1)
             {
                 //handles leaning when going forward
-                
+                CarBodyMesh.localRotation = Quaternion.Slerp(CarBodyMesh.localRotation, Quaternion.Euler(0,
+                                CarBodyMesh.localRotation.eulerAngles.y, tilt * horizontalInput * carLeanCurve.Evaluate(velocity.z / maxSpeed)), 4f * Time.deltaTime);
             }
             else
             {
                 //handles leaning when going backwards
+                CarBodyMesh.localRotation = Quaternion.Slerp(CarBodyMesh.localRotation, Quaternion.Euler(0, 0, 0), 4f * Time.deltaTime);
             }
             
         }
@@ -362,6 +379,8 @@ public class VehicleControllerRework : MonoBehaviour
         slide = bSlide;
         slideTranSpeed = bSlideTranSpeed;
         tilt = bTilt;
+        boostMaxSpeed = bBoostMaxSpeed;
+        boostAccelaration = bBoostAccelaration;
     }
 
     void assignCar(){
@@ -371,6 +390,8 @@ public class VehicleControllerRework : MonoBehaviour
         turn = cTurn;
         driftLimit = cDriftLimit;
         tilt = cTilt;
+        boostMaxSpeed = cBoostMaxSpeed;
+        boostAccelaration = cBoostAccelaration;
     }
     
     
