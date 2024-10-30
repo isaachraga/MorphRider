@@ -3,3 +3,9 @@
 //left off at 3rd driving video
 //need to get values ported to prometheus code from car controller
 //motorcycle set up like car at slow speeds, transition to shifting center of mass
+
+
+//Controller Select
+//1 Player Can switch controllers if they are available
+//2nd player needs to join with button south
+//

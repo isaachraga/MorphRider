@@ -116,7 +116,7 @@ public class VehicleControllerRework : MonoBehaviour
                 float sign = Mathf.Sign(velocity.z);
                 float TurnMultiplyer = bikeTurnCurve.Evaluate(velocity.magnitude / maxSpeed);
                 if(sliding){
-                    print("sliding");
+                    //print("sliding");
                     rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, slide / 10 * Time.deltaTime);
                 }else{
                     if (accelerateInput > 0.1f || velocity.z > 1)
@@ -145,7 +145,7 @@ public class VehicleControllerRework : MonoBehaviour
                     if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
                         if(boostInput > 0.1f){
-                            Debug.Log("Boosting");
+                            //Debug.Log("Boosting");
                             rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * boostMaxSpeed, boostAccelaration / 10 * Time.deltaTime);
                         }else{
                             rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
@@ -153,7 +153,7 @@ public class VehicleControllerRework : MonoBehaviour
                         
                     } else if (Mathf.Abs(brakeInput) > 0.1f){
                         rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
-                       
+                
                     }
 
                     

@@ -80,6 +80,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Start"",
+                    ""type"": ""Value"",
+                    ""id"": ""0d45da28-f089-463b-85af-efd51f4b8145"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -302,6 +311,39 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Boost"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""238d79ee-1fa5-4ec9-98c4-a24eeedf2554"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Boost"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3812d4dd-d114-4888-b872-94ed6ad69fb1"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller2"",
+                    ""action"": ""Boost"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""00eff30a-60eb-446a-b0d2-c7e5661dcbf2"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Start"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -350,6 +392,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Driving_Slide = m_Driving.FindAction("Slide", throwIfNotFound: true);
         m_Driving_Morph = m_Driving.FindAction("Morph", throwIfNotFound: true);
         m_Driving_Boost = m_Driving.FindAction("Boost", throwIfNotFound: true);
+        m_Driving_Start = m_Driving.FindAction("Start", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -417,6 +460,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_Slide;
     private readonly InputAction m_Driving_Morph;
     private readonly InputAction m_Driving_Boost;
+    private readonly InputAction m_Driving_Start;
     public struct DrivingActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -427,6 +471,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Slide => m_Wrapper.m_Driving_Slide;
         public InputAction @Morph => m_Wrapper.m_Driving_Morph;
         public InputAction @Boost => m_Wrapper.m_Driving_Boost;
+        public InputAction @Start => m_Wrapper.m_Driving_Start;
         public InputActionMap Get() { return m_Wrapper.m_Driving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -454,6 +499,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Boost.started += instance.OnBoost;
             @Boost.performed += instance.OnBoost;
             @Boost.canceled += instance.OnBoost;
+            @Start.started += instance.OnStart;
+            @Start.performed += instance.OnStart;
+            @Start.canceled += instance.OnStart;
         }
 
         private void UnregisterCallbacks(IDrivingActions instance)
@@ -476,6 +524,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Boost.started -= instance.OnBoost;
             @Boost.performed -= instance.OnBoost;
             @Boost.canceled -= instance.OnBoost;
+            @Start.started -= instance.OnStart;
+            @Start.performed -= instance.OnStart;
+            @Start.canceled -= instance.OnStart;
         }
 
         public void RemoveCallbacks(IDrivingActions instance)
@@ -528,5 +579,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnSlide(InputAction.CallbackContext context);
         void OnMorph(InputAction.CallbackContext context);
         void OnBoost(InputAction.CallbackContext context);
+        void OnStart(InputAction.CallbackContext context);
     }
 }

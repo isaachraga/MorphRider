@@ -512,7 +512,7 @@ GameObject:
   - component: {fileID: 1003419362}
   - component: {fileID: 1003419363}
   m_Layer: 0
-  m_Name: ControllerManager
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -542,9 +542,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1003419361}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6392fa33cb4211440b970b869266806f, type: 3}
+  m_Script: {fileID: 11500000, guid: 4a958d42a39f82c4980471e92cad16cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerPref: {fileID: 7572124451116544537, guid: b244286e609dad64993c43d4e415f652, type: 3}
 --- !u!1 &1068164476
 GameObject:
   m_ObjectHideFlags: 0
@@ -961,7 +962,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1052162422277260865, guid: b244286e609dad64993c43d4e415f652, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 65.93
+      value: 63
       objectReference: {fileID: 0}
     - target: {fileID: 1052162422277260865, guid: b244286e609dad64993c43d4e415f652, type: 3}
       propertyPath: m_LocalPosition.y
@@ -969,7 +970,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1052162422277260865, guid: b244286e609dad64993c43d4e415f652, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 205.18
+      value: 205
       objectReference: {fileID: 0}
     - target: {fileID: 1052162422277260865, guid: b244286e609dad64993c43d4e415f652, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1014,6 +1015,10 @@ PrefabInstance:
     - target: {fileID: 7572124451116544537, guid: b244286e609dad64993c43d4e415f652, type: 3}
       propertyPath: m_Name
       value: Vehicle
+      objectReference: {fileID: 0}
+    - target: {fileID: 7572124451116544537, guid: b244286e609dad64993c43d4e415f652, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
