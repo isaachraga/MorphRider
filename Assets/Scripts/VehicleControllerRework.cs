@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 
 public class VehicleControllerRework : MonoBehaviour
 {
+
+    public int PlayerNum = 0;
     //Bike Vars
     public Transform[] BikeWheels = new Transform[2];
     public Transform BikeBodyMesh;

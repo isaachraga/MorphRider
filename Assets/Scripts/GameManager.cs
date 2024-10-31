@@ -15,11 +15,13 @@ public class GameManager : MonoBehaviour
         p1 = Instantiate(playerPref, new Vector3(63f,.66f,205f), Quaternion.identity);
         //Debug.Log("P1: "+P1DeviceID+" || P2: "+P2DeviceID);
         p1.GetComponent<PlayerInput>().SwitchCurrentControlScheme(InputSystem.GetDeviceById(P1DeviceID));
+        p1.GetComponent<VehicleControllerRework>().PlayerNum = 1;
         
         if(PlayerCount == 2){
             P2DeviceID = PlayerPrefs.GetInt("P2DeviceID");
             p2 = Instantiate(playerPref, new Vector3(71f,.66f,205f), Quaternion.identity);
             p2.GetComponent<PlayerInput>().SwitchCurrentControlScheme(InputSystem.GetDeviceById(P2DeviceID));
+            p2.GetComponent<VehicleControllerRework>().PlayerNum = 2;
             p1.GetComponentInChildren<Camera>().rect = new Rect(0f, 0.5f,1f,0.5f);
             p2.GetComponentInChildren<Camera>().rect = new Rect(0f, 0f,1f,0.5f);
         }

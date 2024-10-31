@@ -17,7 +17,7 @@ public class SplineJunction : MonoBehaviour
 
     void OnTriggerEnter(Collider col){
         if(col.gameObject.tag == "Traffic"){
-            Debug.Log("Junction Hit");
+            //Debug.Log("Junction Hit");
             col.gameObject.GetComponent<TrafficVehicleController>().SwitchRoute(Route[node[selection]]);
             
         }
