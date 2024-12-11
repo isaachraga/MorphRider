@@ -73,7 +73,7 @@ public class VehicleControllerRework : MonoBehaviour
 
         }
 
-        hud.GetComponent<TMP_Text>().text = velocity.z.ToString("F2");
+        hud.GetComponent<TMP_Text>().text = velocity.z.ToString("F2") + " || Lap:  "+lap+"/2";
         
         Visuals();
         AudioManager();

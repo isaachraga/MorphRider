@@ -2050,6 +2050,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dd594af2b751eb42a895b2d5ea9132a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gm: {fileID: 0}
+  lap: 0
   PlayerNum: 0
   BikeWheels:
   - {fileID: 6851701652670590268}
@@ -2177,7 +2179,7 @@ MonoBehaviour:
   bSlide: 3
   bTilt: -50
   bSlideTranSpeed: 12
-  bBoostAccelaration: 100
+  bBoostAccelaration: 50
   bBoostMaxSpeed: 120
   slidePos: {x: -0.8, y: -0.2, z: 0.38}
   slideRot: {x: 0, y: 90, z: -90}
@@ -2299,7 +2301,7 @@ MonoBehaviour:
   cTurn: 35
   cDriftLimit: 11
   cTilt: -10
-  cBoostAccelaration: 100
+  cBoostAccelaration: 50
   cBoostMaxSpeed: 140
   drivableSurface:
     serializedVersion: 2
@@ -2312,6 +2314,7 @@ MonoBehaviour:
   sliding: 0
   morphFlag: 0
   bike: 1
+  hud: {fileID: 0}
 --- !u!114 &3893769433505220439
 MonoBehaviour:
   m_ObjectHideFlags: 0
