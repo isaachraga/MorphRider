@@ -1515,7 +1515,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.23654264, z: 0.000001013279}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1854576921655935691}
   - {fileID: 5721608080356164830}
@@ -2225,14 +2225,14 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.03333341
     - serializedVersion: 3
-      time: 0.112272754
-      value: 0.16742703
-      inSlope: 0.5226024
-      outSlope: 0.5226024
+      time: 0.04402019
+      value: 0.1521835
+      inSlope: 0.7269028
+      outSlope: 0.7269028
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.048614576
+      outWeight: 0.03722803
     - serializedVersion: 3
       time: 0.85564387
       value: 0.1488899

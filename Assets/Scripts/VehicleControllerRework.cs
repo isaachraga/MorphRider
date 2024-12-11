@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using TMPro;
+using Unity.VisualScripting;
+using UnityEngine.InputSystem.Controls;
 public class VehicleControllerRework : MonoBehaviour
 {
 
+    public GameManager gm;
+    public int lap = 0;
     public int PlayerNum = 0;
     //Bike Vars
     public Transform[] BikeWheels = new Transform[2];
@@ -44,10 +48,13 @@ public class VehicleControllerRework : MonoBehaviour
     private float maxSpeed, accelaration, brake, turn, driftLimit, slide, tilt, slideTranSpeed, boostAccelaration, boostMaxSpeed;
     public bool drifting, sliding, morphFlag, bike;
     private Vector3 origin;
+    public GameObject hud;
     
     void Start()
     {
+
         radius = rb.GetComponent<SphereCollider>().radius;
+        gm = FindAnyObjectByType<GameManager>();
         rb.centerOfMass = Vector3.zero;
         assignBike();
     }
@@ -56,13 +63,18 @@ public class VehicleControllerRework : MonoBehaviour
     void Update()
     {
         //Control mapping to variables
-        horizontalInput = playerInput.actions["Steering"].ReadValue<Vector2>().x;
-        accelerateInput = playerInput.actions["Accelerate"].ReadValue<float>();
-        brakeInput = playerInput.actions["Brake"].ReadValue<float>();
-        slideInput = playerInput.actions["Slide"].ReadValue<float>();
-        morphInput = playerInput.actions["Morph"].ReadValue<float>();
-        boostInput = playerInput.actions["Boost"].ReadValue<float>();
+        if(!gm.DisableControls){
+            horizontalInput = playerInput.actions["Steering"].ReadValue<Vector2>().x;
+            accelerateInput = playerInput.actions["Accelerate"].ReadValue<float>();
+            brakeInput = playerInput.actions["Brake"].ReadValue<float>();
+            slideInput = playerInput.actions["Slide"].ReadValue<float>();
+            morphInput = playerInput.actions["Morph"].ReadValue<float>();
+            boostInput = playerInput.actions["Boost"].ReadValue<float>();
 
+        }
+
+        hud.GetComponent<TMP_Text>().text = velocity.z.ToString("F2");
+        
         Visuals();
         AudioManager();
 
@@ -118,7 +130,7 @@ public class VehicleControllerRework : MonoBehaviour
                 float sign = Mathf.Sign(velocity.z);
                 float TurnMultiplyer = bikeTurnCurve.Evaluate(velocity.magnitude / maxSpeed);
                 if(sliding){
-                    //print("sliding");
+                    Debug.Log("sliding");
                     rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, slide / 10 * Time.deltaTime);
                 }else{
                     if (accelerateInput > 0.1f || velocity.z > 1)
@@ -134,11 +146,11 @@ public class VehicleControllerRework : MonoBehaviour
                     //brakelogic
                     if (!GroundedCheck())
                     {
-                        rb.constraints = RigidbodyConstraints.FreezeRotationX;
+                        //rb.constraints = RigidbodyConstraints.FreezeRotationX;
                     }
                     else
                     {
-                        rb.constraints = RigidbodyConstraints.None;
+                        //rb.constraints = RigidbodyConstraints.None;
                     }
 
                     
@@ -154,7 +166,12 @@ public class VehicleControllerRework : MonoBehaviour
                         }
                         
                     } else if (Mathf.Abs(brakeInput) > 0.1f){
-                        rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
+                        if (velocity.z > 3f){
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
+                        } else if(Mathf.Abs(accelerateInput) < 0.1f){
+                            rb.velocity = Vector3.Lerp(rb.velocity, -GOrb.transform.forward * brakeInput * maxSpeed/4, accelaration / 10 * Time.deltaTime);
+                        }
+                        
                 
                     }
 
@@ -229,13 +246,17 @@ public class VehicleControllerRework : MonoBehaviour
                     if (Mathf.Abs(accelerateInput) > 0.1f)
                     {
                         if(boostInput > 0.1f){
-                            Debug.Log("Boosting");
+                            //Debug.Log("Boosting");
                             rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * boostMaxSpeed, boostAccelaration / 10 * Time.deltaTime);
                         }else{
                             rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * accelerateInput * maxSpeed, accelaration / 10 * Time.deltaTime);
                         }
                     } else if (Mathf.Abs(brakeInput) > 0.1f){
-                        rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
+                        if (velocity.z > 3f){
+                            rb.velocity = Vector3.Lerp(rb.velocity, GOrb.transform.forward * 0, brake / 10 * Time.deltaTime);
+                        } else if(Mathf.Abs(accelerateInput) < 0.1f){
+                            rb.velocity = Vector3.Lerp(rb.velocity, -GOrb.transform.forward * brakeInput * maxSpeed/4, accelaration / 10 * Time.deltaTime);
+                        }
                     }
                     
 
@@ -342,6 +363,7 @@ public class VehicleControllerRework : MonoBehaviour
         //Start drift until steering corrects to specified angle
         if(velocity.z > 0.1f && Mathf.Abs(velocity.x) > 0.1f && brakeInput > 0.1f &&!drifting){
             drifting = true;
+            Debug.Log("Drifting");
             //frictionMaterial.dynamicFriction = driftFrictionCurve.Evaluate(Mathf.Abs(velocity.x / 100));
         }
         else if(Math.Abs(velocity.x) <= driftLimit && drifting){
