@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     void Awake(){
         p1Speed.SetActive(false);
         p2Speed.SetActive(false);
+        mainMenuButton.SetActive(false);
         winText.text = "";
         PlayerCount = PlayerPrefs.GetInt("PlayerCount");
         P1DeviceID = PlayerPrefs.GetInt("P1DeviceID");
@@ -79,6 +80,7 @@ public class GameManager : MonoBehaviour
     public void enableWin(string winnerID){
         
         if (singlePlayer){
+            mainMenuButton.SetActive(true);
             winText.text = "Final Time: "+timeSpan.ToString();
             if(raceTime < PlayerPrefs.GetFloat("Time") || PlayerPrefs.GetFloat("Time") == 0){
                 PlayerPrefs.SetFloat("Time", raceTime);
